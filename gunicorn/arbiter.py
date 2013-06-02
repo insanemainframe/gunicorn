@@ -13,6 +13,8 @@ import signal
 import sys
 import time
 import traceback
+from multiprocessing import Pool
+
 
 from gunicorn.errors import HaltServer, AppImportError
 from gunicorn.pidfile import Pidfile
@@ -62,6 +64,7 @@ class Arbiter(object):
         self.worker_age = 0
         self.reexec_pid = 0
         self.master_name = "Master"
+        self.ppool = Pool(1)
 
         cwd = util.getcwd()
 
@@ -332,6 +335,7 @@ class Arbiter(object):
             self.kill_workers(sig)
             time.sleep(0.1)
             self.reap_workers()
+        self.ppool.terminate()
         self.kill_workers(signal.SIGKILL)
 
     def reexec(self):
@@ -408,7 +412,15 @@ class Arbiter(object):
                 continue
 
             self.log.critical("WORKER TIMEOUT (pid:%s)", pid)
-            self.kill_worker(pid, signal.SIGKILL)
+            self.warn_worker(pid)
+            kill_args = (pid, signal.SIGKILL, self.cfg.kill_delay)
+            self.ppool.apply_async(self.kill_worker, kill_args)
+
+    def warn_worker(self, pid):
+        """
+            Send warning signal to worker before sending SIGKILL
+        """
+        os.kill(pid, signal.SIGUSR2)
 
     def reap_workers(self):
         """\
@@ -513,15 +525,17 @@ class Arbiter(object):
         :attr sig: `signal.SIG*` value
         """
         for pid in self.WORKERS.keys():
-            self.kill_worker(pid, sig)
+            self.kill_worker(pid, sig, wait=False)
 
-    def kill_worker(self, pid, sig):
+    def kill_worker(self, pid, sig, wait=0):
         """\
         Kill a worker
 
         :attr pid: int, worker pid
         :attr sig: `signal.SIG*` value
          """
+        if wait:
+            time.sleep(wait)
         try:
             os.kill(pid, sig)
         except OSError as e:
