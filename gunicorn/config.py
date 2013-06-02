@@ -372,7 +372,7 @@ def validate_timeout_handler(val):
 
     largs = len(inspect.getargspec(val)[0])
 
-    if largs == 1:
+    if largs == 2:
         return val
     else:
         raise TypeError("Value must have an arity of: 1")
@@ -1227,7 +1227,7 @@ class TimeoutHandler(Setting):
     validator = validate_timeout_handler
     type = six.callable
 
-    def timeout_handler(req):
+    def timeout_handler(req, frame):
         pass
     default = staticmethod(timeout_handler)
     desc = """\

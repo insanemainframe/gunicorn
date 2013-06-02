@@ -131,11 +131,11 @@ class Worker(object):
 
     def handle_usr2(self, sig, frame):
         """
-            Handle signalm senging by arbiter before senging SIGKILL
+            Handle signal, senging by arbiter before senging SIGKILL
             because of worker timeout
         """
         if hasattr(self, 'current_req'):
-            self.cfg.timeout_handler(self.current_req)
+            self.cfg.timeout_handler(self.current_req, frame)
 
     def handle_quit(self, sig, frame):
         self.alive = False

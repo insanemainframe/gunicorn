@@ -411,10 +411,10 @@ class Arbiter(object):
             except ValueError:
                 continue
 
-            self.log.critical("WORKER TIMEOUT (pid:%s)", pid)
             self.warn_worker(pid)
             kill_args = (pid, signal.SIGKILL, self.cfg.kill_delay)
             self.ppool.apply_async(self.kill_worker, kill_args)
+            self.log.critical("WORKER TIMEOUT (pid:%s)", pid)
 
     def warn_worker(self, pid):
         """
@@ -525,7 +525,7 @@ class Arbiter(object):
         :attr sig: `signal.SIG*` value
         """
         for pid in self.WORKERS.keys():
-            self.kill_worker(pid, sig, wait=False)
+            self.kill_worker(pid, sig)
 
     def kill_worker(self, pid, sig, wait=0):
         """\
