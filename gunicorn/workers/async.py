@@ -33,7 +33,7 @@ class AsyncWorker(base.Worker):
             try:
                 if not self.cfg.keepalive:
                     req = six.next(parser)
-                    self.handle_request(listener, req, client, addr)
+                    self.handle_request_implemented(listener, req, client, addr)
                 else:
                     # keepalive loop
                     while True:
@@ -42,7 +42,7 @@ class AsyncWorker(base.Worker):
                             req = six.next(parser)
                         if not req:
                             break
-                        self.handle_request(listener, req, client, addr)
+                        self.handle_request_implemented(listener, req, client, addr)
             except http.errors.NoMoreData as e:
                 self.log.debug("Ignored premature client disconnection. %s", e)
             except StopIteration as e:
@@ -73,7 +73,7 @@ class AsyncWorker(base.Worker):
         finally:
             util.close(client)
 
-    def handle_request(self, listener, req, sock, addr):
+    def handle_request_implemented(self, listener, req, sock, addr):
         request_start = datetime.now()
         environ = {}
         resp = None

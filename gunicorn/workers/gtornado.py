@@ -34,7 +34,7 @@ class TornadoWorker(Worker):
         super(TornadoWorker, self).handle_quit(sig, frame)
         self.ioloop.stop()
 
-    def handle_request(self):
+    def handle_request_implemented(self):
         self.nr += 1
         if self.alive and self.nr >= self.max_requests:
             self.alive = False
@@ -70,7 +70,7 @@ class TornadoWorker(Worker):
         old_connection_finish = httpserver.HTTPConnection.finish
 
         def finish(other):
-            self.handle_request()
+            self.handle_request_implemented()
             old_connection_finish(other)
         httpserver.HTTPConnection.finish = finish
         sys.modules["tornado.httpserver"] = httpserver

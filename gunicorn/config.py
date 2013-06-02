@@ -367,6 +367,16 @@ def validate_post_request(val):
     else:
         raise TypeError("Value must have an arity of: 4")
 
+def validate_timeout_handler(val):
+    val = validate_callable(-1)(val)
+
+    largs = len(inspect.getargspec(val)[0])
+
+    if largs == 1:
+        return val
+    else:
+        raise TypeError("Value must have an arity of: 1")
+
 
 class ConfigFile(Setting):
     name = "config"
@@ -1209,6 +1219,20 @@ class PostRequest(Setting):
 
         The callable needs to accept two instance variables for the Worker and
         the Request.
+        """
+
+class TimeoutHandler(Setting):
+    name = "timeout_handler"
+    section = "Server Hooks"
+    validator = validate_timeout_handler
+    type = six.callable
+
+    def timeout_handler(req):
+        pass
+    default = staticmethod(timeout_handler)
+    desc = """\
+        Called before a worker has been killed by arbiter.
+
         """
 
 

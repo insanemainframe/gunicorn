@@ -112,14 +112,30 @@ class Worker(object):
         signal.signal(signal.SIGINT, self.handle_exit)
         signal.signal(signal.SIGWINCH, self.handle_winch)
         signal.signal(signal.SIGUSR1, self.handle_usr1)
+        signal.signal(signal.SIGUSR2, self.handle_usr2)
         # Don't let SIGQUIT and SIGUSR1 disturb active requests
         # by interrupting system calls
         if hasattr(signal, 'siginterrupt'):  # python >= 2.6
             signal.siginterrupt(signal.SIGQUIT, False)
             signal.siginterrupt(signal.SIGUSR1, False)
 
+    def handle_request(self, listener, req, client, addr):
+        self.current_req = req
+        try:
+            self.handle_request_implemented(listener, req, client, addr)
+        finally:
+            del self.current_req
+
     def handle_usr1(self, sig, frame):
         self.log.reopen_files()
+
+    def handle_usr2(self, sig, frame):
+        """
+            Handle signalm senging by arbiter before senging SIGKILL
+            because of worker timeout
+        """
+        if hasattr(self, 'current_req'):
+            self.cfg.timeout_handler(self.current_req)
 
     def handle_quit(self, sig, frame):
         self.alive = False

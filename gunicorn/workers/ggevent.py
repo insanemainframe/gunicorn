@@ -114,9 +114,9 @@ class GeventWorker(AsyncWorker):
         except:
             pass
 
-    def handle_request(self, *args):
+    def handle_request_implemented(self, *args):
         try:
-            super(GeventWorker, self).handle_request(*args)
+            super(GeventWorker, self).handle_request_implemented(*args)
         except gevent.GreenletExit:
             pass
 

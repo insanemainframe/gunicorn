@@ -85,7 +85,7 @@ class SyncWorker(base.Worker):
 
             parser = http.RequestParser(self.cfg, client)
             req = six.next(parser)
-            self.handle_request(listener, req, client, addr)
+            self.handle_request_implemented(listener, req, client, addr)
         except http.errors.NoMoreData as e:
             self.log.debug("Ignored premature client disconnection. %s", e)
         except StopIteration as e:
@@ -107,7 +107,7 @@ class SyncWorker(base.Worker):
         finally:
             util.close(client)
 
-    def handle_request(self, listener, req, client, addr):
+    def handle_request_implemented(self, listener, req, client, addr):
         environ = {}
         resp = None
         try:
